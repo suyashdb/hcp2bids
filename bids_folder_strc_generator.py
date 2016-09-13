@@ -64,8 +64,8 @@ def hcp2bids(d):
             dst = dwi + parentdir +'_'+ os.path.split(dwi_data)[1]
             shutil.move(dwi_data, dst)
         print("done with DWI's for --", subjects)
-        dwi_subj_raw = os.path.join(subjects, 'bids/')
-        dwi_sbref_list = glob.glob(os.path.join(dwi_subj_raw, '*/*DWI*SBRef*'))
+        dwi_subj_raw = os.path.join(subjects, 'bids')
+        dwi_sbref_list = glob.glob(os.path.join(dwi_subj_raw, '*','*DWI*SBRef*'))
         for sbref in dwi_sbref_list:
             parentdir = os.path.split(os.path.dirname(sbref))[1]
             dst = dwi +'_'+ os.path.split(sbref)[1]
@@ -94,7 +94,7 @@ def hcp2bids(d):
                 filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq +'_'+ 'run-' + run + '_' + tail.lower()
             path_filename = func + filename
             shutil.move(nifti_func_file, path_filename)
-            touch(path_filename[:-6]+ 'json')
+            #touch(path_filename[:-6]+ 'json')
             print(filename)
         ''' sort anat files and rename it '''
         #anat = '/Users/suyashdb/Documents/hcp2bids/hcpdata/285446/bids/anat'
@@ -109,7 +109,7 @@ def hcp2bids(d):
             filename = 'sub-' + sub + '_' + 'run-' + run + '_' + modality + tail
             path_filename = anat + filename
             shutil.move(anat_file, path_filename)
-            touch(path_filename[:-6]+ 'json')
+            #touch(path_filename[:-6]+ 'json')
             print(filename)
             ##########
         #Sort all nii.gz files in dwi and fmaps '''
@@ -124,7 +124,16 @@ def hcp2bids(d):
             filename = 'sub-' + sub + '_' + 'acq-' + acq + '_' + modality + tail
             path_filename = dwi + filename
             shutil.move(dwi_file, path_filename)
+            dwi_json_dict = {}
+            dwi_json_dict["EffectiveEchoSpaceing"] = 0.00078
+            if dwi_file[-9:-7] == 'LR':
+                dwi_json_dict["PhaseEncodingDirection"] = "i-"
+            else:
+                dwi_json_dict["PhaseEncodingDirection"] = "i"
             touch(path_filename[:-6]+ 'json')
+            json_file = path_filename[:-6]+ 'json'
+            with open(json_file, 'w') as editfile:
+                json.dump( dwi_json_dict, editfile, indent = 4)
             shutil.move((dwi_file[:-6]+'bval'), (path_filename[:-6] + 'bval'))
             shutil.move((dwi_file[:-6]+'bvec'), (path_filename[:-6] + 'bvec'))
             print(filename)
@@ -140,7 +149,16 @@ def hcp2bids(d):
             path_filename = dwi + filename
             shutil.move(dwi_file, path_filename)
             print(filename)
+            dwi_json_dict = {}
+            dwi_json_dict["EffectiveEchoSpaceing"] = 0.00078
+            if filename_split[7][:2] == 'LR':
+                dwi_json_dict["PhaseEncodingDirection"] = "i-"
+            else:
+                dwi_json_dict["PhaseEncodingDirection"] = "i"
             touch(path_filename[:-6]+ 'json')
+            json_file = path_filename[:-6]+ 'json'
+            with open(json_file, 'w') as editfile:
+                json.dump( dwi_json_dict, editfile, indent = 4)
         ''' Fmaps'''
         counter = 1
         fmap_files_list = glob.glob(os.path.join(fmap, '*SpinEchoFieldMap*.nii.gz'))
@@ -168,21 +186,22 @@ def hcp2bids(d):
                 filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq +'_'+ 'run-' + run + '_' + tail.lower()
             print('intended_for - ',filename)
             filename = '/func/'+ filename
-            intended_for ={"IntendedFor", filename}
+            fmap_json_dict = {}
+            fmap_json_dict["intended_for"] = filename
+            fmap_json_dict["TotalReadoutTime"] = 0.08346
+            if fmapfile[-9:-7] == 'LR':
+                fmap_json_dict["PhaseEncodingDirection"] = "i-"
+            else:
+                fmap_json_dict["PhaseEncodingDirection"] = "i"
+            #intended_for ={"IntendedFor", filename}
             dir = counter
             hcpfmapfilename = 'sub-' + sub + '_'+ 'dir-' + str(dir) + '_' + 'epi.nii.gz'
             print('DWI_filename',hcpfmapfilename)
             path_filename = fmap + hcpfmapfilename
             shutil.move(fmapfile, path_filename)
             touch(path_filename[:-6]+ 'json')
+            json_file = path_filename[:-6]+ 'json'
+            with open(json_file, 'w') as editfile:
+                json.dump( fmap_json_dict, editfile, indent = 4)
             counter = counter + 1
     ''' Writing Json files'''
-
-
-fmap_files_list = glob.glob(os.path.join(fmap, '*_FieldMap*.nii.gz'))
-
-
-
-
-import json
-json-string = json.dumps(intended_for)

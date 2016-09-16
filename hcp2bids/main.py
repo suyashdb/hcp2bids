@@ -21,19 +21,19 @@ def touch(fname):
 def FourDimImg(image, destinationpath_3d, outputfilename):
     #outputfilename= sub-285345_run-02_magnitude2
     #this function handles conversion from 4d to 3d along with saving output with bids std name
-    img = nibabel.load(image)
+    img = ni.load(image)
     destination_path = destinationpath_3d
-    images = nibabel.four_to_three(img)
+    images = ni.four_to_three(img)
     outputfilenamepattern = outputfilename + '{:01d}.nii.gz'
     for i, img_3d in enumerate(images):
         i = i +1
         output_filename = outputfilenamepattern.format(i)
         output_path = os.path.join(destination_path, output_filename)
-        nibabel.save(img_3d, output_path)
+        ni.save(img_3d, output_path)
     os.remove(image)
     return img_3d
 
-#d = '/work/04275/suyashdb/lonestar/test_hcp/'
+
 def hcp2bids(input_dir, output_dir):
     sub_dir = [os.path.join(input_dir,o) for o in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir,o))]
     for subjects in sub_dir:
@@ -348,15 +348,5 @@ def main():
     arrange_subjects(output_dir)
     json_toplevel(output_dir)
 
-
-
-
-
-
-
-
-
-
-
-
-hcp2bids('/work/04275/suyashdb/lonestar/test_hcp/', '/work/04275/suyashdb/lonestar/test_output/')
+if __name__ == '__main__':
+    main()

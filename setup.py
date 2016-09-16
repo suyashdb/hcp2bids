@@ -1,5 +1,7 @@
 from setuptools import setup
-import os
+import os, glob, shutil
+import re, json, numpy
+import nibabel as ni
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -48,7 +50,6 @@ setup(
     # List run-time dependencies here.  These will be installed by pip when your
     # project is installed.
     install_requires = ["numpy",
-                        "re",
                         "pandas",
                         'nibabel'],
 

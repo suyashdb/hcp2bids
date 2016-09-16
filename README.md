@@ -1,16 +1,15 @@
 # hcp2bids
 To convert Human Connectome project data to BIDS std.
 
+usage: hcp2bids [-h] [-v] Input_directory output_dir
 
-Usage: hcp2bids(dirname)
+    BIDS to NDA converter.
 
-    - dirname: Path to the directory with hcp subjects.
+    positional arguments:
+      Input_directory    Location of the root of your HCP dataset
 
+      output_dir  Directory where bids dataset will be stored
 
-Output:
-
-subject##/bids/ 
-            -anat/
-            -func/
-            -fmap/
-            -dwi/
+    optional arguments:
+      -h, --help        show this help message and exit
+Example:  hcp2bids /work/04275/suyashdb/lonestar/test_hcp /work/04275/suyashdb/lonestar/test_output

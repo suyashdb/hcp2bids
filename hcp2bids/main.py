@@ -6,8 +6,10 @@ ture and renames all files as per BIDS standard.
 @author: Suyash B
 """
 
+import argparse
 import os, glob, shutil
 import re, json, numpy
+import sys
 import nibabel as ni
 
 

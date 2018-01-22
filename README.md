@@ -3,8 +3,6 @@ To convert Human Connectome project data to BIDS std.
 
 usage: hcp2bids [-h] [-v] Input_directory output_dir
 
-    BIDS to NDA converter.
-
     positional arguments:
       Input_directory    Location of the root of your HCP dataset
 

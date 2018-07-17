@@ -35,6 +35,8 @@ def FourDimImg(image, destinationpath_3d, outputfilename):
 
 
 def hcp2bids(input_dir, output_dir):
+    import os 
+
     sub_dir = [os.path.join(input_dir,o) for o in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir,o))]
     for subjects in sub_dir:
         subj_raw =  os.path.join(subjects, 'unprocessed/3T/')
@@ -42,17 +44,29 @@ def hcp2bids(input_dir, output_dir):
         #path_bids = '/scratch/04275/suyashdb/hcp/%s/' %subject
         bids = os.path.join(output_dir, subjects.split('/')[-1])
         #bids = subjects + '/bids/'
-        os.mkdir(bids)
+        if not os.path.exists(bids):
+            os.mkdir(bids)
+
         fmap = os.path.join(bids, 'fmap/')
         print('fmap')
         func = os.path.join(bids, 'func/')
         anat = os.path.join(bids, 'anat/')
         dwi =  os.path.join(bids,'dwi/')
-        os.mkdir(fmap)
+        
+        if not os.path.exists(fmap):
+            os.mkdir(fmap)
+        
         print("fmap path",fmap)
-        os.mkdir(func)
-        os.mkdir(anat)
-        os.mkdir(dwi)
+
+        if not os.path.exists(func):
+            os.mkdir(func)
+
+        if not os.path.exists(anat):
+            os.mkdir(anat)
+
+        if not os.path.exists(dwi):
+            os.mkdir(dwi)
+
         fieldmaplist = glob.glob(os.path.join(subj_raw, '*/*FieldMap*'))
         for fieldmap in fieldmaplist:
             parentdir = os.path.split(os.path.dirname(fieldmap))[1]
@@ -113,7 +127,14 @@ def hcp2bids(input_dir, output_dir):
             else:
                 filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq +'_'+ 'run-' + run + '_' + tail.lower()
             path_filename = func + filename
+
+            if not os.path.isfile(path_filename):
+                basedir = os.path.dirname(path_filename)
+                if not os.path.exists(basedir):
+                    os.makedirs(basedir)
+
             shutil.move(nifti_func_file, path_filename)
+
             #touch(path_filename[:-6]+ 'json')
             print(filename)
         ''' sort anat files and rename it '''
@@ -143,6 +164,12 @@ def hcp2bids(input_dir, output_dir):
             tail = filename_split[-1][-7:]
             filename = 'sub-' + sub + '_' + 'acq-' + acq + '_' + modality + tail
             path_filename = dwi + filename
+            
+            if not os.path.isfile(path_filename):
+                basedir = os.path.dirname(path_filename)
+                if not os.path.exists(basedir):
+                    os.makedirs(basedir)
+
             shutil.move(dwi_file, path_filename)
             dwi_json_dict = {}
             dwi_json_dict["EffectiveEchoSpacing"] = 0.00078
@@ -326,11 +353,11 @@ def main():
             sys.exit(2)
 
     parser = MyParser(
-        description="BIDS to NDA converter. This software sucks because Chris wrote it.",
+        description="BIDS to NDA converter. This software sucks because Chris wrote it. But it's better because Nino's fixing it.",
         fromfile_prefix_chars='@')
     # TODO Specify your real parameters here.
     parser.add_argument(
-        "Input_directory",
+        "input_dir",
         help="Location of the root of your HCP dataset directory",
         metavar="input_dir")
     parser.add_argument(
@@ -351,10 +378,16 @@ def main():
     print("Input Directory: ", input_dir)
     print("GUID Mapping", guid_map)
     print("Output Directory: ", output_dir)
-    print("Metadata extraction complete.")
 
+    print("\nMetadata extraction complete.")
+
+    print("\nRunning hcp2bids")
     hcp2bids(input_dir, output_dir)
+
+    print("\nRunning arrange_subjects")
     arrange_subjects(output_dir)
+
+    print("\nRunning json_toplevel")
     json_toplevel(output_dir)
 
 if __name__ == '__main__':

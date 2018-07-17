@@ -34,7 +34,7 @@ def FourDimImg(image, destinationpath_3d, outputfilename):
     return img_3d
 
 
-def hcp2bids(input_dir, output_dir):
+def hcp2bids(input_dir, output_dir, s_link = False):
     import os 
 
     #get hcp subject directory paths
@@ -83,28 +83,46 @@ def hcp2bids(input_dir, output_dir):
         for func_data in func_list:
             parentdir = os.path.split(os.path.dirname(func_data))[1]
             dst = func + parentdir +'_'+ os.path.split(func_data)[1]
-            shutil.move(func_data, dst)
+
+            if s_link:
+                if not os.path.islink(dst):
+                    os.symlink(func_data, dst)
+            else:
+                shutil.move(func_data, dst)
         print("done with func for --", subjects)
 
         sbref_list = glob.glob(os.path.join(subj_raw, '*/*SBRef*'))
         for sbref in sbref_list:
             parentdir = os.path.split(os.path.dirname(sbref))[1]
             dst = func + parentdir +'_'+ os.path.split(sbref)[1]
-            shutil.move(sbref, dst)
+            
+            if s_link:
+                if not os.path.islink(dst):
+                    os.symlink(sbref, dst)
+            else:
+                shutil.move(sbref, dst)
         print("done with SBREF's for --", subjects)
 
         anat_list = glob.glob(os.path.join(subj_raw, 'T*/*3T_T*'))
         for anat_data in anat_list:
             parentdir = os.path.split(os.path.dirname(anat_data))[1]
             dst = anat + parentdir +'_'+ os.path.split(anat_data)[1]
-            shutil.move(anat_data, dst)
+            if s_link:
+                if not os.path.islink(dst):
+                    os.symlink(anat_data, dst)
+            else:
+                shutil.move(anat_data, dst)
         print("done with Anat for --", subjects)
 
         dwi_list = glob.glob(os.path.join(subj_raw, '*/*DWI*'))
         for dwi_data in dwi_list:
             parentdir = os.path.split(os.path.dirname(dwi_data))[1]
             dst = dwi + parentdir +'_'+ os.path.split(dwi_data)[1]
-            shutil.move(dwi_data, dst) 
+            if s_link:
+                if not os.path.islink(dst):
+                    os.symlink(dwi_data, dst)
+            else:
+                shutil.move(dwi_data, dst) 
         print("done with DWI's for --", subjects)
 
         dwi_subj_raw = os.path.join(subjects, 'bids')
@@ -121,13 +139,11 @@ def hcp2bids(input_dir, output_dir):
         print("path where nifti files are searched -", os.path.join(func, '*fMRI*.nii.gz'))
         print(len(nifti_func_list))
         for nifti_func_file in nifti_func_list:
-            filename_split = nifti_func_file.split('_')
-            task = filename_split[2]
-            print("Task", task)
-            acq = filename_split[3]
-            print("Acq", acq)
-            sub = filename_split[4].lower()
-            print("Sub", sub)
+            filename_split = nifti_func_file.split('/')
+            task = filename_split[3].split('_')[1]
+            #acq = filename_split[3]
+            #print("Acq", acq)
+            sub = filename_split[1].lower()
 
             if task in ['REST1', 'REST2']:
                 #m = re.match(r"([a-zA-Z]+)([0-9]+)",task)
@@ -135,15 +151,21 @@ def hcp2bids(input_dir, output_dir):
                 run = '0' + str(task[-1])
                 task = str(task[:-1])
                 # print("This is task form rest loop - ", task)
-            tail = filename_split[-1]
+            
+            tail = filename_split[-1].split('_')[-1]
+
             if task not in ['REST', 'REST2']:
                 if 'SBRef' in tail:
-                    filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_' + tail.lower()
+                    #filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_' + tail.lower()
+                    filename = 'sub-' + sub + '_' + 'task-' + task + '_' + tail.lower()
                 else:
-                    filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_bold' + tail[-7:]
+                    #filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_bold' + tail[-7:]
+                    filename = 'sub-' + sub + '_' + 'task-' + task + '_bold' + tail[-7:]
             else:
-                filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq +'_'+ 'run-' + run + '_' + tail.lower()
+                #filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq +'_'+ 'run-' + run + '_' + tail.lower()
+                filename = 'sub-' + sub + '_' + 'task-' + task + '_' +'_'+ 'run-' + run + '_' + tail.lower()
             path_filename = func + filename
+            print(path_filename)
 
             if not os.path.isfile(path_filename):
                 basedir = os.path.dirname(path_filename)
@@ -169,6 +191,7 @@ def hcp2bids(input_dir, output_dir):
             tail = filename_split[-1][-7:]
             filename = 'sub-' + sub + '_' + 'run-0' + run + '_' + modality + tail
             path_filename = anat + filename
+            
             shutil.move(anat_file, path_filename)
             #touch(path_filename[:-6]+ 'json')
             print(filename)
@@ -178,9 +201,9 @@ def hcp2bids(input_dir, output_dir):
         print("path where nifti files are searched -", os.path.join(dwi, 'Diffusion*DWI*.nii.gz'))
         print(len(dwi_files_list))
         for dwi_file in dwi_files_list:
-            filename_split = dwi_file.split('_')
+            filename_split = dwi_file.split('/')
             print(filename_split)
-            sub = filename_split[2]
+            sub = filename_split[1]
             acq = filename_split[5].lower() + filename_split[6][:2]
             modality = 'dwi'
             tail = filename_split[-1][-7:]
@@ -191,8 +214,9 @@ def hcp2bids(input_dir, output_dir):
                 basedir = os.path.dirname(path_filename)
                 if not os.path.exists(basedir):
                     os.makedirs(basedir)
-
+            
             shutil.move(dwi_file, path_filename)
+            
             dwi_json_dict = {}
             dwi_json_dict["EffectiveEchoSpacing"] = 0.00078
             dwi_json_dict["TotalReadoutTime"] = 0.60
@@ -205,6 +229,7 @@ def hcp2bids(input_dir, output_dir):
             json_file = path_filename[:-6]+ 'json'
             with open(json_file, 'w') as editfile:
                 json.dump( dwi_json_dict, editfile, indent = 4)
+            
             shutil.move((dwi_file[:-6]+'bval'), (path_filename[:-6] + 'bval'))
             shutil.move((dwi_file[:-6]+'bvec'), (path_filename[:-6] + 'bvec'))
             print(filename)
@@ -221,16 +246,20 @@ def hcp2bids(input_dir, output_dir):
             tail = filename_split[-1][-7:]
             filename = 'sub-' + sub + '_' + 'acq-' + acq + '_' + modality + tail
             path_filename = dwi + filename
+            
             shutil.move(dwi_file, path_filename)
+            
             print(filename)
             dwi_json_dict = {}
             dwi_json_dict["EffectiveEchoSpacing"] = 0.00078
             dwi_json_dict["TotalReadoutTime"] = 0.60
             dwi_json_dict["EchoTime"] = 0.08950
+            
             if filename_split[7][:2] == 'LR':
                 dwi_json_dict["PhaseEncodingDirection"] = "i-"
             else:
                 dwi_json_dict["PhaseEncodingDirection"] = "i"
+            
             touch(path_filename[:-6]+ 'json')
             json_file = path_filename[:-6]+ 'json'
             with open(json_file, 'w') as editfile:
@@ -285,6 +314,7 @@ def hcp2bids(input_dir, output_dir):
             print('hcpfmap_filename',hcpfmapfilename)
         
             path_filename = fmap + hcpfmapfilename
+            
             shutil.move(fmapfile, path_filename)
         
             touch(path_filename[:-6]+ 'json')
@@ -313,7 +343,9 @@ def hcp2bids(input_dir, output_dir):
             #looking into phasediff image
             filename_phasediff = 'sub-' + sub + '_' + 'run-0' + str(run) + '_phasediff' + '.nii.gz'
             filename_phasediff_path = os.path.join(fmap,filename_phasediff)
+            
             shutil.move(fmapfile.replace('Magnitude', 'Phase'), filename_phasediff_path)
+            
             filename_phasediff_json = filename_phasediff[:-6]+ 'json'
             filename_phasediff_json_path = os.path.join(fmap, filename_phasediff_json)
             touch(filename_phasediff_json_path)
@@ -451,7 +483,7 @@ def main():
     print("\nMetadata extraction complete.")
 
     print("\nRunning hcp2bids")
-    #hcp2bids(input_dir, output_dir)
+    hcp2bids(input_dir, output_dir, s_link = symlink)
 
     print("\nRunning arrange_subjects")
     #arrange_subjects(output_dir)

@@ -316,6 +316,8 @@ def json_toplevel(output_dir):
             json.dump( z, editfile, indent = 4)
 
 def main():
+    import argparse
+
     class MyParser(argparse.ArgumentParser):
         def error(self, message):
             sys.stderr.write('error: %s\n' % message)

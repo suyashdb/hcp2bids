@@ -317,6 +317,7 @@ def json_toplevel(output_dir):
 
 def main():
     import argparse
+    import sys
 
     class MyParser(argparse.ArgumentParser):
         def error(self, message):
@@ -343,7 +344,13 @@ def main():
         metavar="output_dir")
     args = parser.parse_args()
 
-    run(args)
+    # run(args)
+    input_dir = sys.argv[1]
+    guid_map = sys.argv[2]
+    output_dir = sys.argv[3]
+    print("Input Directory: ", input_dir)
+    print("GUID Mapping", guid_map)
+    print("Output Directory: ", output_dir)
     print("Metadata extraction complete.")
 
     hcp2bids(input_dir, output_dir)

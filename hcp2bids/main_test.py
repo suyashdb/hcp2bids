@@ -343,17 +343,23 @@ def hcp2bids(input_dir, output_dir, s_link = False):
         print("\npath where nifti files are searched -", os.path.join(fmap, 'T*Magnitude.nii.gz'))
         run = 1
         for fmapfile in fmap_files_list:
+            print(fmapfile)
             fmap_file = os.path.split(fmapfile)[1]
             filename_split = fmap_file.split('_')
             acq = filename_split[1]
             sub = filename_split[2]
             run_number = filename_split[1][-1]
-            filename = 'sub-' + sub + '_' + 'run-0' + str(run) + '_magnitude'
-          
-            print(filename)   
+            
+            filename = 'sub-' + sub + '_' + 'run-0' + str(run) + '_magnitude'+ '.nii.gz'
+            path_filename = os.path.join(fmap, filename)
+            print(path_filename)
+
+            shutil.move(fmapfile, path_filename)
+            
             #looking into phasediff image
             filename_phasediff = 'sub-' + sub + '_' + 'run-0' + str(run) + '_phasediff' + '.nii.gz'
             filename_phasediff_path = os.path.join(fmap,filename_phasediff)
+            print(filename_phasediff_path)
             
             shutil.move(fmapfile.replace('Magnitude', 'Phase'), filename_phasediff_path)
             
@@ -375,6 +381,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             with open(filename_phasediff_json_path, 'w') as editfile:
                 json.dump( fmap_phasdiff_json_dict, editfile, indent = 4)
             run = run + 1
+
 
         print("\n\nBIDS format data is at -", output_dir)
 
@@ -489,10 +496,10 @@ def main():
     hcp2bids(input_dir, output_dir, s_link = symlink)
 
     print("\nRunning arrange_subjects")
-    arrange_subjects(output_dir)
+    #arrange_subjects(output_dir)
 
     print("\nRunning json_toplevel")
-    json_toplevel(output_dir)
+    #json_toplevel(output_dir)
 
 if __name__ == '__main__':
     main()

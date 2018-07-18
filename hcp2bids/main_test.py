@@ -141,8 +141,12 @@ def hcp2bids(input_dir, output_dir, s_link = False):
         for nifti_func_file in nifti_func_list:
             filename_split = nifti_func_file.split('/')
             task = filename_split[3].split('_')[1]
-            #acq = filename_split[3]
-            #print("Acq", acq)
+            
+            if 'LR' in filename_split[3]:
+                acq = 'LR'
+            else:
+                acq = 'RL'
+
             sub = filename_split[1].lower()
 
             if task in ['REST1', 'REST2']:
@@ -156,11 +160,31 @@ def hcp2bids(input_dir, output_dir, s_link = False):
 
             if task not in ['REST', 'REST2']:
                 if 'SBRef' in tail:
-                    #filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_' + tail.lower()
-                    filename = 'sub-' + sub + '_' + 'task-' + task + '_' + tail.lower()
+                    filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_' + tail.lower()
+                    #filename = 'sub-' + sub + '_' + 'task-' + task + '_' + tail.lower()
                 else:
-                    #filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_bold' + tail[-7:]
-                    filename = 'sub-' + sub + '_' + 'task-' + task + '_bold' + tail[-7:]
+                    filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_bold' + tail[-7:]
+                    #filename = 'sub-' + sub + '_' + 'task-' + task + '_bold' + tail[-7:]
+
+                    # rep_time = { "EMOTION" : 2.26,
+                    # "GAMBLING" : 3.20,
+                    # "LANGUAGE" : 3.95,
+                    # "SOCIAL" : 3.45,
+                    # "WM" : 5.01,
+                    # "MOTOR" : 3.5,
+                    # "RELATIONAL" : 2.95
+                    # }
+
+                    # bold_json_dict = {}
+                    # bold_json_dict["RepetitionTime"] = 0.72
+                    # bold_json_dict["TaskName"] = task
+
+                    # touch(func + filename[:-6]+  'json')
+                    # json_file = func + filename[:-6]+ 'json'
+                    
+                    # with open(json_file, 'w') as editfile:
+                    #     json.dump(bold_json_dict, editfile, indent = 4)
+
             else:
                 #filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq +'_'+ 'run-' + run + '_' + tail.lower()
                 filename = 'sub-' + sub + '_' + 'task-' + task + '_' +'run-' + run + '_' + tail.lower()

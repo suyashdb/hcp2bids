@@ -140,14 +140,14 @@ def hcp2bids(input_dir, output_dir, s_link = False):
         print(len(nifti_func_list))
         for nifti_func_file in nifti_func_list:
             filename_split = nifti_func_file.split('/')
-            task = filename_split[3].split('_')[1]
+            task = filename_split[-1].split('_')[1]
             
-            if 'LR' in filename_split[3]:
+            if 'LR' in filename_split[-1]:
                 acq = 'LR'
             else:
                 acq = 'RL'
 
-            sub = filename_split[1].lower()
+            sub = filename_split[-3].lower()
 
             if task in ['REST1', 'REST2']:
                 #m = re.match(r"([a-zA-Z]+)([0-9]+)",task)
@@ -208,9 +208,9 @@ def hcp2bids(input_dir, output_dir, s_link = False):
         print(len(anat_files_list))
         for anat_file in anat_files_list:
             filename_split = anat_file.split('/')
-            sub = filename_split[1]
-            modality = filename_split[3].split('_')[0]
-            tail = filename_split[3][-7:]
+            sub = filename_split[-3]
+            modality = filename_split[-1].split('_')[0]
+            tail = filename_split[-1][-7:]
 
             run = str(1)
             filename = 'sub-' + sub + '_' + 'run-0' + run + '_' + modality + tail
@@ -232,7 +232,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
         for dwi_file in dwi_files_list:
             filename_split = dwi_file.split('/')
           
-            sub = filename_split[1]
+            sub = filename_split[-3]
             acq = filename_split[-1].split('_')[4].lower() + filename_split[-1].split('_')[5][:2].lower()
 
             if "SBRef.nii.gz" in filename_split[-1].split('_'):
@@ -278,7 +278,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
         print("\npath where nifti files are searched -", os.path.join(dwi, '*DWI*SBRef.nii.gz'))
         for dwi_file in dwisbref_files_list:
             filename_split = dwi_file.split('/')
-            sub = filename_split[1]
+            sub = filename_split[-3]
             acq = filename_split[-1].split('_')[-3].lower() + filename_split[-1].split('_')[-2].lower()
             modality = 'sbref'
             tail = filename_split[-1][-7:]

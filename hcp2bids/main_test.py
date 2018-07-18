@@ -280,115 +280,115 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             with open(json_file, 'w') as editfile:
                 json.dump( dwi_json_dict, editfile, indent = 4)
         
-        ''' Fmaps'''
-        ''' Glob all the functional nifties and create func path
-            Add nifties to fmap folder and create json with meta information'''
-        counter = 1
-        fmap_files_list = glob.glob(os.path.join(fmap, '*SpinEchoFieldMap*.nii.gz'))
-        print("path where nifti files are searched -", os.path.join(fmap, '*SpinEchoFieldMap*.nii.gz'))
-        print(len(fmap_files_list))
-        for fmapfile in fmap_files_list:
-            fmap_file = os.path.split(fmapfile)[1]
-            filename_split = fmap_file.split('_')
+        # ''' Fmaps'''
+        # ''' Glob all the functional nifties and create func path
+        #     Add nifties to fmap folder and create json with meta information'''
+        # counter = 1
+        # fmap_files_list = glob.glob(os.path.join(fmap, '*SpinEchoFieldMap*.nii.gz'))
+        # print("path where nifti files are searched -", os.path.join(fmap, '*SpinEchoFieldMap*.nii.gz'))
+        # print(len(fmap_files_list))
+        # for fmapfile in fmap_files_list:
+        #     fmap_file = os.path.split(fmapfile)[1]
+        #     filename_split = fmap_file.split('_')
 
-            task = filename_split[1]
-            acq = filename_split[2]
-            sub = filename_split[3].lower()
-            #print("Task:", task, "\tAcq:", acq, "\tSub:", sub)
-            if task in ['REST1', 'REST2']:
-                #m = re.match(r"([a-zA-Z]+)([0-9]+)",task)
-                #run = m.group(2)
-                run = '0' + str(task[-1])
-                task = str(task[:-1])
-                print("This is task form rest loop - ", task)
-            tail = filename_split[-1]
-            if task not in ['REST', 'REST2']:
-                if 'SBRef' in tail:
-                    filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_' + tail.lower()
-                else:
-                    filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_bold' + tail[-7:]
-            else:
-                filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq +'_'+ 'run-' + run + '_' + tail.lower()
+        #     task = filename_split[1]
+        #     acq = filename_split[2]
+        #     sub = filename_split[3].lower()
+        #     #print("Task:", task, "\tAcq:", acq, "\tSub:", sub)
+        #     if task in ['REST1', 'REST2']:
+        #         #m = re.match(r"([a-zA-Z]+)([0-9]+)",task)
+        #         #run = m.group(2)
+        #         run = '0' + str(task[-1])
+        #         task = str(task[:-1])
+        #         print("This is task form rest loop - ", task)
+        #     tail = filename_split[-1]
+        #     if task not in ['REST', 'REST2']:
+        #         if 'SBRef' in tail:
+        #             filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_' + tail.lower()
+        #         else:
+        #             filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_bold' + tail[-7:]
+        #     else:
+        #         filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq +'_'+ 'run-' + run + '_' + tail.lower()
         
-            print('intended_for - ',filename)
+        #     print('intended_for - ',filename)
         
-            filename = 'func/'+ filename
-            fmap_json_dict = {}
-            fmap_json_dict["intended_for"] = filename
+        #     filename = 'func/'+ filename
+        #     fmap_json_dict = {}
+        #     fmap_json_dict["intended_for"] = filename
         
-            fmap_json_dict["TotalReadoutTime"] = 0.08346
+        #     fmap_json_dict["TotalReadoutTime"] = 0.08346
         
-            if fmapfile[-9:-7] == 'LR':
-                fmap_json_dict["PhaseEncodingDirection"] = "i-"
-            else:
-                fmap_json_dict["PhaseEncodingDirection"] = "i"
-            #intended_for ={"IntendedFor", filename}
-            dir = counter
+        #     if fmapfile[-9:-7] == 'LR':
+        #         fmap_json_dict["PhaseEncodingDirection"] = "i-"
+        #     else:
+        #         fmap_json_dict["PhaseEncodingDirection"] = "i"
+        #     #intended_for ={"IntendedFor", filename}
+        #     dir = counter
         
-            hcpfmapfilename = 'sub-' + sub + '_'+ 'dir-' + str(dir) + '_' + 'epi.nii.gz'
-            print('hcpfmap_filename',hcpfmapfilename)
+        #     hcpfmapfilename = 'sub-' + sub + '_'+ 'dir-' + str(dir) + '_' + 'epi.nii.gz'
+        #     print('hcpfmap_filename',hcpfmapfilename)
         
-            path_filename = fmap + hcpfmapfilename
+        #     path_filename = fmap + hcpfmapfilename
             
-            shutil.move(fmapfile, path_filename)
+        #     shutil.move(fmapfile, path_filename)
         
-            touch(path_filename[:-6]+ 'json')
-            json_file = path_filename[:-6]+ 'json'
-            with open(json_file, 'w') as editfile:
-                json.dump( fmap_json_dict, editfile, indent = 4)
-            counter = counter + 1
-            print("BIDS format data is at -", output_dir)
+        #     touch(path_filename[:-6]+ 'json')
+        #     json_file = path_filename[:-6]+ 'json'
+        #     with open(json_file, 'w') as editfile:
+        #         json.dump( fmap_json_dict, editfile, indent = 4)
+        #     counter = counter + 1
+        #     print("BIDS format data is at -", output_dir)
 
-        #fmap_magnitude and phasediff
-        ''' Glob all the anatomical nifties and create func path
-            Add nifties to fmap folder and create json with meta information'''
-        fmap_files_list = glob.glob(os.path.join(fmap, 'T*Magnitude.nii.gz'))
-        print("path where nifti files are searched -", os.path.join(fmap, 'T*Magnitude.nii.gz'))
-        print(len(fmap_files_list))
-        run = 1
-        for fmapfile in fmap_files_list:
-            fmap_file = os.path.split(fmapfile)[1]
-            filename_split = fmap_file.split('_')
-            acq = filename_split[1]
-            sub = filename_split[2]
-            run_number = filename_split[1][-1]
-            filename = 'sub-' + sub + '_' + 'run-0' + str(run) + '_magnitude'
+        # #fmap_magnitude and phasediff
+        # ''' Glob all the anatomical nifties and create func path
+        #     Add nifties to fmap folder and create json with meta information'''
+        # fmap_files_list = glob.glob(os.path.join(fmap, 'T*Magnitude.nii.gz'))
+        # print("path where nifti files are searched -", os.path.join(fmap, 'T*Magnitude.nii.gz'))
+        # print(len(fmap_files_list))
+        # run = 1
+        # for fmapfile in fmap_files_list:
+        #     fmap_file = os.path.split(fmapfile)[1]
+        #     filename_split = fmap_file.split('_')
+        #     acq = filename_split[1]
+        #     sub = filename_split[2]
+        #     run_number = filename_split[1][-1]
+        #     filename = 'sub-' + sub + '_' + 'run-0' + str(run) + '_magnitude'
           
            
-            #looking into phasediff image
-            filename_phasediff = 'sub-' + sub + '_' + 'run-0' + str(run) + '_phasediff' + '.nii.gz'
-            filename_phasediff_path = os.path.join(fmap,filename_phasediff)
+        #     #looking into phasediff image
+        #     filename_phasediff = 'sub-' + sub + '_' + 'run-0' + str(run) + '_phasediff' + '.nii.gz'
+        #     filename_phasediff_path = os.path.join(fmap,filename_phasediff)
             
-            shutil.move(fmapfile.replace('Magnitude', 'Phase'), filename_phasediff_path)
+        #     shutil.move(fmapfile.replace('Magnitude', 'Phase'), filename_phasediff_path)
             
-            filename_phasediff_json = filename_phasediff[:-6]+ 'json'
-            filename_phasediff_json_path = os.path.join(fmap, filename_phasediff_json)
-            touch(filename_phasediff_json_path)
+        #     filename_phasediff_json = filename_phasediff[:-6]+ 'json'
+        #     filename_phasediff_json_path = os.path.join(fmap, filename_phasediff_json)
+        #     touch(filename_phasediff_json_path)
         
-            intended_for_filename = 'anat/sub-' + sub + '_' + 'run-0' + run_number + '_' + filename_split[0] + '.nii.gz'
-            print('intended_for - ',intended_for_filename)
+        #     intended_for_filename = 'anat/sub-' + sub + '_' + 'run-0' + run_number + '_' + filename_split[0] + '.nii.gz'
+        #     print('intended_for - ',intended_for_filename)
             
-            fmap_phasdiff_json_dict = {}
-            fmap_phasdiff_json_dict["intended_for"] = intended_for_filename
-            if filename_split[0] == 'T1w':
-                fmap_phasdiff_json_dict["EchoTime1"] = 0.00214
-                fmap_phasdiff_json_dict["EchoTime2"] = 0.00460
-            if filename_split[0] == 'T2w':
-                fmap_phasdiff_json_dict["EchoTime1"] = 0.00565
-                fmap_phasdiff_json_dict["EchoTime2"] = 0.00811
-            with open(filename_phasediff_json_path, 'w') as editfile:
-                json.dump( fmap_phasdiff_json_dict, editfile, indent = 4)
-            run = run + 1
+        #     fmap_phasdiff_json_dict = {}
+        #     fmap_phasdiff_json_dict["intended_for"] = intended_for_filename
+        #     if filename_split[0] == 'T1w':
+        #         fmap_phasdiff_json_dict["EchoTime1"] = 0.00214
+        #         fmap_phasdiff_json_dict["EchoTime2"] = 0.00460
+        #     if filename_split[0] == 'T2w':
+        #         fmap_phasdiff_json_dict["EchoTime1"] = 0.00565
+        #         fmap_phasdiff_json_dict["EchoTime2"] = 0.00811
+        #     with open(filename_phasediff_json_path, 'w') as editfile:
+        #         json.dump( fmap_phasdiff_json_dict, editfile, indent = 4)
+        #     run = run + 1
 
-        nifties_json_list = glob.glob(os.path.join(fmap, '*.json'))
-        print("path where nifti files are searched -", os.path.join(fmap, '*.json'))
-        print(len(nifties_json_list))
-        for json_file in nifties_json_list:
-           nifti_file = os.path.join(os.path.dirname(json_file), 
-            os.path.splitext(os.path.basename(json_file))[0]) + '.nii.gz'
+        # nifties_json_list = glob.glob(os.path.join(fmap, '*.json'))
+        # print("path where nifti files are searched -", os.path.join(fmap, '*.json'))
+        # print(len(nifties_json_list))
+        # for json_file in nifties_json_list:
+        #    nifti_file = os.path.join(os.path.dirname(json_file), 
+        #     os.path.splitext(os.path.basename(json_file))[0]) + '.nii.gz'
            
 
-           print(nifti_file, os.path.isfile(nifti_file))
+        #    print(nifti_file, os.path.isfile(nifti_file))
 
 ## main.py
 ##get input and output dir from user

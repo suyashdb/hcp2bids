@@ -475,7 +475,7 @@ def main():
             sys.exit(2)
 
     parser = MyParser(
-        description="BIDS to NDA converter. This software sucks because Chris wrote it. But it's better because Nino's fixing it.",
+        description="HCP to BIDS converter. This software sucks because Chris wrote it. But it's better because Nino's fixing it.",
         fromfile_prefix_chars='@',
         )
     # TODO Specify your real parameters here.
@@ -484,19 +484,24 @@ def main():
         help="Location of the root of your HCP dataset directory",
         metavar="input_dir")
     parser.add_argument(
-        "guid_mapping",
-        help="Path to a text file with participant_id to GUID mapping. You will need to use the "
-             "GUID Tool (https://ndar.nih.gov/contribute.html) to generate GUIDs for your participants.",
-        metavar="GUID_MAPPING")
-    parser.add_argument(
         "output_dir",
         help="Directory where BIDS data will be stored",
         metavar="output_dir")
     parser.add_argument(
         "-s",
-        help="Type t for true and f for false. Whether the HCP2BIDS should symlink files or move them to output_dir",
+        help="Type t for true and f for false. If true, symlinks will be " + \
+            "created for files from input_dir to output_dir and put the" + \
+            " symlinks in BIDS format. If false, files from input_dir will be " + \
+            "moved to output_dir and then put into BIDS format.",
         metavar = "--symlink",
         default = 'f'
+    )
+    parser.add_argument(
+        "-g",
+        help="Path to a text file with participant_id to GUID mapping. You will need to use the "
+             "GUID Tool (https://ndar.nih.gov/contribute.html) to generate GUIDs for your participants.",
+        metavar="--guid_mapping",
+        default = '.'
     )
     args = parser.parse_args()
 

@@ -37,7 +37,10 @@ def FourDimImg(image, destinationpath_3d, outputfilename):
 def hcp2bids(input_dir, output_dir):
     import os 
 
+<<<<<<< HEAD
     #get hcp subject directory paths
+=======
+>>>>>>> 0b39e2ec6cd431649e714745269eda1d1d2ea74c
     sub_dir = [os.path.join(input_dir,o) for o in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir,o))]
     
 
@@ -52,7 +55,10 @@ def hcp2bids(input_dir, output_dir):
         if not os.path.exists(bids):
             os.mkdir(bids)
 
+<<<<<<< HEAD
         #output directory paths for fmap, func, anat and dwi
+=======
+>>>>>>> 0b39e2ec6cd431649e714745269eda1d1d2ea74c
         fmap = os.path.join(bids, 'fmap/')
         func = os.path.join(bids, 'func/')
         anat = os.path.join(bids, 'anat/')
@@ -61,6 +67,11 @@ def hcp2bids(input_dir, output_dir):
         if not os.path.exists(fmap):
             os.mkdir(fmap)
         
+<<<<<<< HEAD
+=======
+        print("fmap path",fmap)
+
+>>>>>>> 0b39e2ec6cd431649e714745269eda1d1d2ea74c
         if not os.path.exists(func):
             os.mkdir(func)
 
@@ -70,8 +81,11 @@ def hcp2bids(input_dir, output_dir):
         if not os.path.exists(dwi):
             os.mkdir(dwi)
 
+<<<<<<< HEAD
         '''Get raw Nifti files from the HCP input directory and move 
         it to the output directory'''
+=======
+>>>>>>> 0b39e2ec6cd431649e714745269eda1d1d2ea74c
         fieldmaplist = glob.glob(os.path.join(subj_raw, '*/*FieldMap*'))
         for fieldmap in fieldmaplist:
             parentdir = os.path.split(os.path.dirname(fieldmap))[1]
@@ -392,9 +406,15 @@ def main():
     print("Input Directory: ", input_dir)
     print("GUID Mapping", guid_map)
     print("Output Directory: ", output_dir)
+<<<<<<< HEAD
 
     print("\nMetadata extraction complete.")
 
+=======
+
+    print("\nMetadata extraction complete.")
+
+>>>>>>> 0b39e2ec6cd431649e714745269eda1d1d2ea74c
     print("\nRunning hcp2bids")
     hcp2bids(input_dir, output_dir)
 

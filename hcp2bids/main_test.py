@@ -86,7 +86,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
 
             if s_link:
                 if not os.path.islink(dst):
-                    os.symlink(func_data, dst)
+                    os.symlink(os.path.realpath(func_data), dst)
             else:
                 shutil.move(func_data, dst)
         print("done with func for --", subjects)
@@ -98,7 +98,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             
             if s_link:
                 if not os.path.islink(dst):
-                    os.symlink(sbref, dst)
+                    os.symlink(os.path.realpath(sbref), dst)
             else:
                 shutil.move(sbref, dst)
         print("done with SBREF's for --", subjects)
@@ -109,7 +109,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             dst = anat + parentdir +'_'+ os.path.split(anat_data)[1]
             if s_link:
                 if not os.path.islink(dst):
-                    os.symlink(anat_data, dst)
+                    os.symlink(os.path.realpath(anat_data), dst)
             else:
                 shutil.move(anat_data, dst)
         print("done with Anat for --", subjects)
@@ -120,7 +120,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             dst = dwi + parentdir +'_'+ os.path.split(dwi_data)[1]
             if s_link:
                 if not os.path.islink(dst):
-                    os.symlink(dwi_data, dst)
+                    os.symlink(os.path.realpath(dwi_data), dst)
             else:
                 shutil.move(dwi_data, dst) 
         print("done with DWI's for --", subjects)
@@ -360,7 +360,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             filename_phasediff = 'sub-' + sub + '_' + 'run-0' + str(run) + '_phasediff' + '.nii.gz'
             filename_phasediff_path = os.path.join(fmap,filename_phasediff)
             print(filename_phasediff_path)
-            
+
             shutil.move(fmapfile.replace('Magnitude', 'Phase'), filename_phasediff_path)
             
             filename_phasediff_json = filename_phasediff[:-6]+ 'json'
@@ -496,10 +496,10 @@ def main():
     hcp2bids(input_dir, output_dir, s_link = symlink)
 
     print("\nRunning arrange_subjects")
-    #arrange_subjects(output_dir)
+    arrange_subjects(output_dir)
 
     print("\nRunning json_toplevel")
-    #json_toplevel(output_dir)
+    json_toplevel(output_dir)
 
 if __name__ == '__main__':
     main()

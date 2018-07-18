@@ -164,6 +164,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             else:
                 #filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq +'_'+ 'run-' + run + '_' + tail.lower()
                 filename = 'sub-' + sub + '_' + 'task-' + task + '_' +'_'+ 'run-' + run + '_' + tail.lower()
+            
             path_filename = func + filename
             print(path_filename)
 
@@ -175,7 +176,6 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             shutil.move(nifti_func_file, path_filename)
 
             #touch(path_filename[:-6]+ 'json')
-            print(filename)
 
         ''' sort anat files and rename it '''
         #anat = '/Users/suyashdb/Documents/hcp2bids/hcpdata/285446/bids/anat'
@@ -183,19 +183,25 @@ def hcp2bids(input_dir, output_dir, s_link = False):
         print("path where nifti files are searched -", os.path.join(anat, '*T*.nii.gz'))
         print(len(anat_files_list))
         for anat_file in anat_files_list:
-            filename_split = anat_file.split('_')
-            run = filename_split[2][-1]
-            print(filename_split)
-            sub = filename_split[3]
-            modality = filename_split[5]
-            tail = filename_split[-1][-7:]
+            filename_split = anat_file.split('/')
+            sub = filename_split[1]
+            modality = filename_split[3].split('_')[0]
+            tail = filename_split[3][-7:]
+
+            run = str(1)
             filename = 'sub-' + sub + '_' + 'run-0' + run + '_' + modality + tail
             path_filename = anat + filename
+
+            while os.path.isfile(path_filename):
+                run = str(int(run) + 1)
+                filename = 'sub-' + sub + '_' + 'run-0' + run + '_' + modality + tail
+                path_filename = anat + filename
             
+            print(path_filename)
             shutil.move(anat_file, path_filename)
             #touch(path_filename[:-6]+ 'json')
-            print(filename)
-            ##########
+        
+            #########
         #Sort all nii.gz files in dwi and fmaps '''
         dwi_files_list = glob.glob(os.path.join(dwi, 'Diffusion*DWI*.nii.gz'))
         print("path where nifti files are searched -", os.path.join(dwi, 'Diffusion*DWI*.nii.gz'))

@@ -163,7 +163,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
                     filename = 'sub-' + sub + '_' + 'task-' + task + '_bold' + tail[-7:]
             else:
                 #filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq +'_'+ 'run-' + run + '_' + tail.lower()
-                filename = 'sub-' + sub + '_' + 'task-' + task + '_' +'_'+ 'run-' + run + '_' + tail.lower()
+                filename = 'sub-' + sub + '_' + 'task-' + task + '_' +'run-' + run + '_' + tail.lower()
             
             path_filename = func + filename
             print(path_filename)

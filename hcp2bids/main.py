@@ -506,7 +506,7 @@ def main():
     args = parser.parse_args()
 
     input_dir = vars(args)['input_dir']
-    guid_map = vars(args)['guid_mapping']
+    guid_map = vars(args)['g']
     output_dir = vars(args)['output_dir']
 
     if vars(args)['s'] == 't':

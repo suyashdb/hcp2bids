@@ -86,7 +86,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
 
             if s_link:
                 if not os.path.islink(dst):
-                    os.symlink(func_data, dst)
+                    os.symlink(os.path.realpath(func_data), dst)
             else:
                 shutil.move(func_data, dst)
         print("done with func for --", subjects)
@@ -98,7 +98,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             
             if s_link:
                 if not os.path.islink(dst):
-                    os.symlink(sbref, dst)
+                    os.symlink(os.path.realpath(sbref), dst)
             else:
                 shutil.move(sbref, dst)
         print("done with SBREF's for --", subjects)
@@ -109,7 +109,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             dst = anat + parentdir +'_'+ os.path.split(anat_data)[1]
             if s_link:
                 if not os.path.islink(dst):
-                    os.symlink(anat_data, dst)
+                    os.symlink(os.path.realpath(anat_data), dst)
             else:
                 shutil.move(anat_data, dst)
         print("done with Anat for --", subjects)
@@ -120,7 +120,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             dst = dwi + parentdir +'_'+ os.path.split(dwi_data)[1]
             if s_link:
                 if not os.path.islink(dst):
-                    os.symlink(dwi_data, dst)
+                    os.symlink(os.path.realpath(dwi_data), dst)
             else:
                 shutil.move(dwi_data, dst) 
         print("done with DWI's for --", subjects)
@@ -136,13 +136,17 @@ def hcp2bids(input_dir, output_dir, s_link = False):
 
         '''Sort func files and rename all per bids'''
         nifti_func_list = glob.glob(os.path.join(func, '*fMRI*.nii.gz'))
-        print("path where nifti files are searched -", os.path.join(func, '*fMRI*.nii.gz'))
+        print("\npath where nifti files are searched -", os.path.join(func, '*fMRI*.nii.gz'))
         print(len(nifti_func_list))
         for nifti_func_file in nifti_func_list:
             filename_split = nifti_func_file.split('/')
             task = filename_split[3].split('_')[1]
-            #acq = filename_split[3]
-            #print("Acq", acq)
+            
+            if 'LR' in filename_split[3]:
+                acq = 'LR'
+            else:
+                acq = 'RL'
+
             sub = filename_split[1].lower()
 
             if task in ['REST1', 'REST2']:
@@ -156,14 +160,38 @@ def hcp2bids(input_dir, output_dir, s_link = False):
 
             if task not in ['REST', 'REST2']:
                 if 'SBRef' in tail:
-                    #filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_' + tail.lower()
-                    filename = 'sub-' + sub + '_' + 'task-' + task + '_' + tail.lower()
+                    filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_' + tail.lower()
+                    #filename = 'sub-' + sub + '_' + 'task-' + task + '_' + tail.lower()
                 else:
-                    #filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_bold' + tail[-7:]
-                    filename = 'sub-' + sub + '_' + 'task-' + task + '_bold' + tail[-7:]
+                    filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_bold' + tail[-7:]
+                    #filename = 'sub-' + sub + '_' + 'task-' + task + '_bold' + tail[-7:]
+
+                    # rep_time = { "EMOTION" : 2.26,
+                    # "GAMBLING" : 3.20,
+                    # "LANGUAGE" : 3.95,
+                    # "SOCIAL" : 3.45,
+                    # "WM" : 5.01,
+                    # "MOTOR" : 3.5,
+                    # "RELATIONAL" : 2.95
+                    # }
+
+                    # bold_json_dict = {}
+                    # bold_json_dict["RepetitionTime"] = 0.72
+                    # bold_json_dict["TaskName"] = task
+
+                    # touch(func + filename[:-6]+  'json')
+                    # json_file = func + filename[:-6]+ 'json'
+                    
+                    # with open(json_file, 'w') as editfile:
+                    #     json.dump(bold_json_dict, editfile, indent = 4)
+
             else:
                 #filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq +'_'+ 'run-' + run + '_' + tail.lower()
+<<<<<<< HEAD
                 filename = 'sub-' + sub + '_' + 'task-' + task + '_' +'_'+ 'run-' + run + '_' + tail.lower()
+=======
+                filename = 'sub-' + sub + '_' + 'task-' + task + '_' +'run-' + run + '_' + tail.lower()
+>>>>>>> 22dcd705efd54a00072ec0036fae28b014b26934
             
             path_filename = func + filename
             print(path_filename)
@@ -180,7 +208,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
         ''' sort anat files and rename it '''
         #anat = '/Users/suyashdb/Documents/hcp2bids/hcpdata/285446/bids/anat'
         anat_files_list = glob.glob(os.path.join(anat, '*T*.nii.gz'))
-        print("path where nifti files are searched -", os.path.join(anat, '*T*.nii.gz'))
+        print("\npath where nifti files are searched -", os.path.join(anat, '*T*.nii.gz'))
         print(len(anat_files_list))
         for anat_file in anat_files_list:
             filename_split = anat_file.split('/')
@@ -204,18 +232,27 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             #########
         #Sort all nii.gz files in dwi and fmaps '''
         dwi_files_list = glob.glob(os.path.join(dwi, 'Diffusion*DWI*.nii.gz'))
-        print("path where nifti files are searched -", os.path.join(dwi, 'Diffusion*DWI*.nii.gz'))
-        print(len(dwi_files_list))
+        print("\npath where nifti files are searched -", os.path.join(dwi, 'Diffusion*DWI*.nii.gz'))
         for dwi_file in dwi_files_list:
             filename_split = dwi_file.split('/')
-            print(filename_split)
+          
             sub = filename_split[1]
-            acq = filename_split[5].lower() + filename_split[6][:2]
+            acq = filename_split[-1].split('_')[4].lower() + filename_split[-1].split('_')[5][:2].lower()
+
+            if "SBRef.nii.gz" in filename_split[-1].split('_'):
+                # filename = 'sub-' + sub + '_' + 'task-' + 'DWI' + '_' + 'sbref' + tail
+                # path_filename = func + filename
+                # shutil.move(dwi_file, path_filename)
+                # print(path_filename)
+                continue
+
             modality = 'dwi'
             tail = filename_split[-1][-7:]
+        
             filename = 'sub-' + sub + '_' + 'acq-' + acq + '_' + modality + tail
             path_filename = dwi + filename
-            
+        
+            print(path_filename)    
             if not os.path.isfile(path_filename):
                 basedir = os.path.dirname(path_filename)
                 if not os.path.exists(basedir):
@@ -227,10 +264,12 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             dwi_json_dict["EffectiveEchoSpacing"] = 0.00078
             dwi_json_dict["TotalReadoutTime"] = 0.60
             dwi_json_dict["EchoTime"] = 0.08950
+        
             if dwi_file[-9:-7] == 'LR':
                 dwi_json_dict["PhaseEncodingDirection"] = "i-"
             else:
                 dwi_json_dict["PhaseEncodingDirection"] = "i"
+        
             touch(path_filename[:-6]+ 'json')
             json_file = path_filename[:-6]+ 'json'
             with open(json_file, 'w') as editfile:
@@ -238,30 +277,28 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             
             shutil.move((dwi_file[:-6]+'bval'), (path_filename[:-6] + 'bval'))
             shutil.move((dwi_file[:-6]+'bvec'), (path_filename[:-6] + 'bvec'))
-            print(filename)
-
+        
         dwisbref_files_list = glob.glob(os.path.join(dwi, '*DWI*SBRef.nii.gz'))
-        print("path where nifti files are searched -", os.path.join(dwi, '*DWI*SBRef.nii.gz'))
-        print(len(dwisbref_files_list))
+        print("\npath where nifti files are searched -", os.path.join(dwi, '*DWI*SBRef.nii.gz'))
         for dwi_file in dwisbref_files_list:
-            filename_split = dwi_file.split('_')
-            print(filename_split)
-            sub = filename_split[3]
-            acq = filename_split[6].lower() + filename_split[7][:2]
+            filename_split = dwi_file.split('/')
+            sub = filename_split[1]
+            acq = filename_split[-1].split('_')[-3].lower() + filename_split[-1].split('_')[-2].lower()
             modality = 'sbref'
             tail = filename_split[-1][-7:]
             filename = 'sub-' + sub + '_' + 'acq-' + acq + '_' + modality + tail
+            
             path_filename = dwi + filename
             
             shutil.move(dwi_file, path_filename)
             
-            print(filename)
+            print(path_filename)
             dwi_json_dict = {}
             dwi_json_dict["EffectiveEchoSpacing"] = 0.00078
             dwi_json_dict["TotalReadoutTime"] = 0.60
             dwi_json_dict["EchoTime"] = 0.08950
             
-            if filename_split[7][:2] == 'LR':
+            if filename_split[-1].split('_')[-2][:2] == 'LR':
                 dwi_json_dict["PhaseEncodingDirection"] = "i-"
             else:
                 dwi_json_dict["PhaseEncodingDirection"] = "i"
@@ -272,11 +309,9 @@ def hcp2bids(input_dir, output_dir, s_link = False):
                 json.dump( dwi_json_dict, editfile, indent = 4)
         
         ''' Fmaps'''
-        ''' Glob all the functional nifties and create func path
-            Add nifties to fmap folder and create json with meta information'''
         counter = 1
         fmap_files_list = glob.glob(os.path.join(fmap, '*SpinEchoFieldMap*.nii.gz'))
-        print("path where nifti files are searched -", os.path.join(fmap, '*SpinEchoFieldMap*.nii.gz'))
+        print("\npath where nifti files are searched -", os.path.join(fmap, '*SpinEchoFieldMap*.nii.gz'))
         print(len(fmap_files_list))
         for fmapfile in fmap_files_list:
             fmap_file = os.path.split(fmapfile)[1]
@@ -286,6 +321,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             acq = filename_split[2]
             sub = filename_split[3].lower()
             #print("Task:", task, "\tAcq:", acq, "\tSub:", sub)
+        
             if task in ['REST1', 'REST2']:
                 #m = re.match(r"([a-zA-Z]+)([0-9]+)",task)
                 #run = m.group(2)
@@ -318,7 +354,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
         
             hcpfmapfilename = 'sub-' + sub + '_'+ 'dir-' + str(dir) + '_' + 'epi.nii.gz'
             print('hcpfmap_filename',hcpfmapfilename)
-        
+         
             path_filename = fmap + hcpfmapfilename
             
             shutil.move(fmapfile, path_filename)
@@ -328,28 +364,31 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             with open(json_file, 'w') as editfile:
                 json.dump( fmap_json_dict, editfile, indent = 4)
             counter = counter + 1
-            print("BIDS format data is at -", output_dir)
 
         #fmap_magnitude and phasediff
-        ''' Glob all the anatomical nifties and create func path
-            Add nifties to fmap folder and create json with meta information'''
+        
         fmap_files_list = glob.glob(os.path.join(fmap, 'T*Magnitude.nii.gz'))
-        print("path where nifti files are searched -", os.path.join(fmap, 'T*Magnitude.nii.gz'))
-        print(len(fmap_files_list))
+        print("\npath where nifti files are searched -", os.path.join(fmap, 'T*Magnitude.nii.gz'))
         run = 1
         for fmapfile in fmap_files_list:
+            print(fmapfile)
             fmap_file = os.path.split(fmapfile)[1]
             filename_split = fmap_file.split('_')
             acq = filename_split[1]
             sub = filename_split[2]
             run_number = filename_split[1][-1]
-            filename = 'sub-' + sub + '_' + 'run-0' + str(run) + '_magnitude'
-          
-           
+            
+            filename = 'sub-' + sub + '_' + 'run-0' + str(run) + '_magnitude'+ '.nii.gz'
+            path_filename = os.path.join(fmap, filename)
+            print(path_filename)
+
+            shutil.move(fmapfile, path_filename)
+            
             #looking into phasediff image
             filename_phasediff = 'sub-' + sub + '_' + 'run-0' + str(run) + '_phasediff' + '.nii.gz'
             filename_phasediff_path = os.path.join(fmap,filename_phasediff)
-            
+            print(filename_phasediff_path)
+
             shutil.move(fmapfile.replace('Magnitude', 'Phase'), filename_phasediff_path)
             
             filename_phasediff_json = filename_phasediff[:-6]+ 'json'
@@ -371,15 +410,8 @@ def hcp2bids(input_dir, output_dir, s_link = False):
                 json.dump( fmap_phasdiff_json_dict, editfile, indent = 4)
             run = run + 1
 
-        nifties_json_list = glob.glob(os.path.join(fmap, '*.json'))
-        print("path where nifti files are searched -", os.path.join(fmap, '*.json'))
-        print(len(nifties_json_list))
-        for json_file in nifties_json_list:
-           nifti_file = os.path.join(os.path.dirname(json_file), 
-            os.path.splitext(os.path.basename(json_file))[0]) + '.nii.gz'
-           
 
-           print(nifti_file, os.path.isfile(nifti_file))
+        print("\n\nBIDS format data is at -", output_dir)
 
 ## main.py
 ##get input and output dir from user
@@ -492,10 +524,10 @@ def main():
     hcp2bids(input_dir, output_dir, s_link = symlink)
 
     print("\nRunning arrange_subjects")
-    #arrange_subjects(output_dir)
+    arrange_subjects(output_dir)
 
     print("\nRunning json_toplevel")
-    #json_toplevel(output_dir)
+    json_toplevel(output_dir)
 
 if __name__ == '__main__':
     main()

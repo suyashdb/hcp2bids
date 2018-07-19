@@ -10,4 +10,4 @@ usage: hcp2bids [-h] [-v] Input_directory output_dir
 
     optional arguments:
       -h, --help        show this help message and exit
-Example:  hcp2bids /work/04275/suyashdb/lonestar/test_hcp /work/04275/suyashdb/lonestar/test_output
+Example:  hcp2bids /path/to/nonbids/dataset /path/to/output/folder

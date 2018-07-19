@@ -30,7 +30,10 @@ usage: main.py [-h] [-s --symlink] [-g --guid_mapping] input_dir output_dir
      
 ```
 
+
 Here is an example of running the code (in the hcp2bids/hcp2bids director)
 ```
 python main.py /data/HCP_files /data/HCP_bids_files -s t
 ```
+    optional arguments:
+      -h, --help        show this help message and exit

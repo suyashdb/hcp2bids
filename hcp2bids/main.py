@@ -33,6 +33,23 @@ def FourDimImg(image, destinationpath_3d, outputfilename):
     os.remove(image)
     return img_3d
 
+def recursive_symlink(src, dest):
+    import os
+    # recursively symlink all the files in the src directory to the dest directort
+    if os.path.isdir(src):
+        os.symlink(src, dest)
+
+        # get all files in the src directory
+        # maintain same file structure in dest directory
+        files_in_dir = [o for o in os.listdir(src)]
+        for file in files_in_dir:
+            new_src = os.path.join(src, file)
+            new_dest = os.path.join(dest, new_src.split('/')[-1])
+            print(new_src, new_dest)
+            recursive_symlink(new_src, new_dest)
+    elif os.path.isfile(src):
+        os.symlink(src, dest)
+
 
 def t1w2bids(input_dir, output_dir, s_link = False):
     import os
@@ -49,7 +66,7 @@ def t1w2bids(input_dir, output_dir, s_link = False):
             os.mkdir(t1w_output)
 
         # output directory for the subject
-        t1w_output = os.path.join(output_dir, 'derivatives/T1w_preproc')
+        t1w_output = os.path.join(output_dir, 'derivatives/T1w_proc')
         if not os.path.exists(t1w_output):
             os.mkdir(t1w_output)
 
@@ -82,7 +99,44 @@ def t1w2bids(input_dir, output_dir, s_link = False):
 
 
 def fs2bids(input_dir, output_dir, s_link = False):
-    print("here2")
+    import os
+
+    sub_dir = [os.path.join(input_dir,o) for o in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir,o))]
+
+    # get hcp subject corrected T1w image
+    for subjects in sub_dir:
+        subj_t1w = os.path.join(subjects, 'T1w')
+        print(subj_t1w)
+        subj_fs = os.path.join(subj_t1w, subjects.split('/')[-1])
+
+        print(os.path.isdir(subj_fs), subj_fs)
+
+        # output directory for the subject
+        fs_output = os.path.join(output_dir, 'derivatives')
+        print(fs_output)
+        if not os.path.exists(fs_output):
+            os.mkdir(fs_output)
+
+        # output directory for the subject
+        fs_output = os.path.join(output_dir, 'derivatives/fs_hcp')
+        print(fs_output)
+        if not os.path.exists(fs_output):
+            os.mkdir(fs_output)
+
+        # output directory with subject name added
+        fs_bids = os.path.join(fs_output, subjects.split('/')[-1])
+        print(fs_bids)
+        
+        # symlink or move fs directory to output dir
+        if s_link:
+            src = subj_fs
+            dest = fs_bids
+
+            os.symlink(src, dest)
+            # if os.path.isdir(src):
+            #     recursive_symlink(src, dest)
+        else:
+            shutil.move(subj_fs, fs_bids)
 
 
 def hcp2bids(input_dir, output_dir, s_link = False):

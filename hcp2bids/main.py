@@ -34,12 +34,57 @@ def FourDimImg(image, destinationpath_3d, outputfilename):
     return img_3d
 
 
+def t1w2bids(input_dir, output_dir, s_link = False):
+    import os
+
+    sub_dir = [os.path.join(input_dir,o) for o in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir,o))]
+
+    # get hcp subject corrected T1w image
+    for subjects in sub_dir:
+        subj_t1w = os.path.join(subjects, 'T1w/T1w_acpc_dc_restore.nii.gz')
+
+        # output directory for the subject
+        t1w_output = os.path.join(output_dir, 'derivatives')
+        if not os.path.exists(t1w_output):
+            os.mkdir(t1w_output)
+
+        # output directory with subject name added
+        t1w_bids = os.path.join(t1w_output, subj_t1w.split('/')[-3])
+        if not os.path.exists(t1w_bids):
+            os.mkdir(t1w_bids)
+
+        # output directory with anat added
+        anat = os.path.join(t1w_bids, 'anat/')
+        if not os.path.exists(anat):
+            os.mkdir(anat)
+
+        # generate BIDS structured filename
+        filename_split = subj_t1w.split('/')
+        sub = filename_split[-3]
+        modality = 'T1w'
+        tail = filename_split[-1][-7:]
+        run = str(1)
+        filename = 'sub-' + sub + '_' + 'run-0' + run + '_' + modality + tail
+        
+        path_filename = anat + filename
+        print(path_filename)
+        
+        # move file to output directory
+        if s_link:
+            os.symlink(os.path.realpath(subj_t1w), path_filename)
+        else:
+            shutil.move(subj_t1w, path_filename)
+
+
+def fs2bids(input_dir, output_dir, s_link = False):
+    print("here2")
+
+
 def hcp2bids(input_dir, output_dir, s_link = False):
     import os 
 
     #get hcp subject directory paths
     sub_dir = [os.path.join(input_dir,o) for o in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir,o))]
-    
 
     for subjects in sub_dir:
         subj_raw =  os.path.join(subjects, 'unprocessed/3T/')
@@ -498,7 +543,7 @@ def main():
     parser.add_argument(
         "-d",
         help="Takes HCP files that have undergone extensive preprocessing and puts them into BIDS format." + \
-                " 'T1w' moves processed T1w images into BIDS format" + \
+                " 'T1w' moves processed T1w images into BIDS format." + \
                 " 'freesurfer' moves HCP freesurfer output files into BIDS format." + \
                 " If this flag is selected, only the derivatives will be put into BIDS format (not the raw files)" + \
                 " in output_dir/derivates.",
@@ -533,14 +578,22 @@ def main():
 
     print("\nMetadata extraction complete.")
 
-    # print("\nRunning hcp2bids")
-    # hcp2bids(input_dir, output_dir, s_link = symlink)
+    if derivatives:
+        if 'T1w' in derivatives:
+            print('\nRunning T1w')
+            t1w2bids(input_dir, output_dir, s_link = symlink)
+        if 'freesurfer' in derivatives:
+            print('\nRunning freesurfer')
+            fs2bids(input_dir, output_dir, s_link = symlink)
+    else:
+        print("\nRunning hcp2bids")
+        hcp2bids(input_dir, output_dir, s_link = symlink)
 
-    # print("\nRunning arrange_subjects")
-    # arrange_subjects(output_dir)
+        print("\nRunning arrange_subjects")
+        arrange_subjects(output_dir)
 
-    # print("\nRunning json_toplevel")
-    # json_toplevel(output_dir)
+        print("\nRunning json_toplevel")
+        json_toplevel(output_dir)
 
 if __name__ == '__main__':
     main()

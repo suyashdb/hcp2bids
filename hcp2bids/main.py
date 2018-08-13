@@ -77,42 +77,43 @@ def t1w2bids(input_dir, output_dir, s_link = False):
     for subjects in sub_dir:
         subj_t1w = os.path.join(subjects, 'T1w/T1w_acpc_dc_restore.nii.gz')
 
-        # output directory for the subject
-        t1w_output = os.path.join(output_dir, 'derivatives')
-        if not os.path.exists(t1w_output):
-            os.mkdir(t1w_output)
+        if(os.path.isfile(subj_t1w)):
+            # output directory for the subject
+            t1w_output = os.path.join(output_dir, 'derivatives')
+            if not os.path.exists(t1w_output):
+                os.mkdir(t1w_output)
 
-        # output directory for the subject
-        t1w_output = os.path.join(output_dir, 'derivatives/T1w_proc')
-        if not os.path.exists(t1w_output):
-            os.mkdir(t1w_output)
+            # output directory for the subject
+            t1w_output = os.path.join(output_dir, 'derivatives/T1w_proc')
+            if not os.path.exists(t1w_output):
+                os.mkdir(t1w_output)
 
-        # output directory with subject name added
-        t1w_bids = os.path.join(t1w_output, subj_t1w.split('/')[-3])
-        if not os.path.exists(t1w_bids):
-            os.mkdir(t1w_bids)
+            # output directory with subject name added
+            t1w_bids = os.path.join(t1w_output, subj_t1w.split('/')[-3])
+            if not os.path.exists(t1w_bids):
+                os.mkdir(t1w_bids)
 
-        # output directory with anat added
-        anat = os.path.join(t1w_bids, 'anat/')
-        if not os.path.exists(anat):
-            os.mkdir(anat)
+            # output directory with anat added
+            anat = os.path.join(t1w_bids, 'anat/')
+            if not os.path.exists(anat):
+                os.mkdir(anat)
 
-        # generate BIDS structured filename
-        filename_split = subj_t1w.split('/')
-        sub = filename_split[-3]
-        modality = 'T1w'
-        tail = filename_split[-1][-7:]
-        run = str(1)
-        filename = 'sub-' + sub + '_' + 'run-0' + run + '_' + modality + tail
+            # generate BIDS structured filename
+            filename_split = subj_t1w.split('/')
+            sub = filename_split[-3]
+            modality = 'T1w'
+            tail = filename_split[-1][-7:]
+            run = str(1)
+            filename = 'sub-' + sub + '_' + 'run-0' + run + '_' + modality + tail
         
-        path_filename = anat + filename
-        print(path_filename)
+            path_filename = anat + filename
+            print(path_filename)
         
-        # move file to output directory
-        if s_link:
-            os.symlink(os.path.realpath(subj_t1w), path_filename)
-        else:
-            shutil.move(subj_t1w, path_filename)
+            # move file to output directory
+            if s_link:
+                os.symlink(os.path.realpath(subj_t1w), path_filename)
+            else:
+                shutil.move(subj_t1w, path_filename)
 
 
 def fs2bids(input_dir, output_dir, s_link = False):
@@ -125,30 +126,30 @@ def fs2bids(input_dir, output_dir, s_link = False):
         subj_t1w = os.path.join(subjects, 'T1w')
         subj_fs = os.path.join(subj_t1w, subjects.split('/')[-1])
 
+        if os.path.isdir(subj_fs):
+            # output directory for the subject
+            fs_output = os.path.join(output_dir, 'derivatives')
+            if not os.path.exists(fs_output):
+                os.mkdir(fs_output)
 
-        # output directory for the subject
-        fs_output = os.path.join(output_dir, 'derivatives')
-        if not os.path.exists(fs_output):
-            os.mkdir(fs_output)
+            # output directory for the subject
+            fs_output = os.path.join(output_dir, 'derivatives/fs_hcp')
+            if not os.path.exists(fs_output):
+                os.mkdir(fs_output)
 
-        # output directory for the subject
-        fs_output = os.path.join(output_dir, 'derivatives/fs_hcp')
-        if not os.path.exists(fs_output):
-            os.mkdir(fs_output)
-
-        # output directory with subject name added
-        fs_bids = os.path.join(fs_output, subjects.split('/')[-1])
+            # output directory with subject name added
+            fs_bids = os.path.join(fs_output, subjects.split('/')[-1])
         
-        # symlink or move fs directory to output dir
-        if s_link:
-            src = subj_fs
-            dest = fs_bids
+            # symlink or move fs directory to output dir
+            if s_link:
+                src = subj_fs
+                dest = fs_bids
 
-            # os.symlink(src, dest)
-            if os.path.isdir(src):
-                recursive_symlink(src, dest)
-        else:
-            shutil.move(subj_fs, fs_bids)
+                # os.symlink(src, dest)
+                if os.path.isdir(src):
+                    recursive_symlink(src, dest)
+            else:
+                shutil.move(subj_fs, fs_bids)
 
 
 def hcp2bids(input_dir, output_dir, s_link = False):
@@ -656,9 +657,6 @@ def main():
 
             print("\nRunning arrange_subjects")
             arrange_subjects(output_dir + '/derivatives/T1w_proc')
-
-            print("\nRunning json_toplevel")
-            json_toplevel(output_dir + '/derivatives/T1w_proc')
 
         if 'freesurfer' in derivatives:
             print('\nRunning freesurfer')

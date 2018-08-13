@@ -53,12 +53,12 @@ def recursive_symlink(src, dest):
 def add_fsaverage(input_dir, output_dir, s_link = False):
 
     # add fsaverage
-    fs_average = os.path.join(input_dir, fsaverage)
+    fs_average = os.path.join(input_dir, 'fsaverage')
     fs_output = os.path.join(output_dir, 'derivatives/fs_hcp')
 
     if os.path.isdir(fs_average) and os.path.isdir(fs_output):
         src = fs_average
-        dest = os.path.join(fs_output, fsaverage)
+        dest = os.path.join(fs_output, 'fsaverage')
 
         if s_link:
             recursive_symlink(src, dest)
@@ -667,7 +667,7 @@ def main():
             print("\nRunning arrange_subjects")
             arrange_subjects(output_dir + '/derivatives/fs_hcp')
 
-            print("\n Running fsaverage")
+            print("\nRunning fsaverage")
             add_fsaverage(input_dir, output_dir, s_link = symlink)
     else:
         print("\nRunning hcp2bids")

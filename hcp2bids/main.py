@@ -37,7 +37,8 @@ def recursive_symlink(src, dest):
     import os
     # recursively symlink all the files in the src directory to the dest directort
     if os.path.isdir(src):
-        os.symlink(src, dest)
+        if not os.path.isdir(dest):
+            os.mkdir(dest)
 
         # get all files in the src directory
         # maintain same file structure in dest directory
@@ -132,9 +133,9 @@ def fs2bids(input_dir, output_dir, s_link = False):
             src = subj_fs
             dest = fs_bids
 
-            os.symlink(src, dest)
-            # if os.path.isdir(src):
-            #     recursive_symlink(src, dest)
+            # os.symlink(src, dest)
+            if os.path.isdir(src):
+                recursive_symlink(src, dest)
         else:
             shutil.move(subj_fs, fs_bids)
 

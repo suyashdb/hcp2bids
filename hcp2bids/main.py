@@ -48,6 +48,11 @@ def t1w2bids(input_dir, output_dir, s_link = False):
         if not os.path.exists(t1w_output):
             os.mkdir(t1w_output)
 
+        # output directory for the subject
+        t1w_output = os.path.join(output_dir, 'derivatives/T1w_preproc')
+        if not os.path.exists(t1w_output):
+            os.mkdir(t1w_output)
+
         # output directory with subject name added
         t1w_bids = os.path.join(t1w_output, subj_t1w.split('/')[-3])
         if not os.path.exists(t1w_bids):
@@ -582,6 +587,13 @@ def main():
         if 'T1w' in derivatives:
             print('\nRunning T1w')
             t1w2bids(input_dir, output_dir, s_link = symlink)
+
+            print("\nRunning arrange_subjects")
+            arrange_subjects(output_dir + '/derivatives/T1w_proc')
+
+            print("\nRunning json_toplevel")
+            json_toplevel(output_dir + '/derivatives/T1w_proc')
+
         if 'freesurfer' in derivatives:
             print('\nRunning freesurfer')
             fs2bids(input_dir, output_dir, s_link = symlink)

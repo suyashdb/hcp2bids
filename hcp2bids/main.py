@@ -46,11 +46,27 @@ def recursive_symlink(src, dest):
         for file in files_in_dir:
             new_src = os.path.join(src, file)
             new_dest = os.path.join(dest, new_src.split('/')[-1])
-            print(new_src, new_dest)
             recursive_symlink(new_src, new_dest)
     elif os.path.isfile(src):
         os.symlink(src, dest)
 
+def add_fsaverage(input_dir, output_dir, s_link = False):
+
+    # add fsaverage
+    fs_average = os.path.join(input_dir, fsaverage)
+    fs_output = os.path.join(output_dir, 'derivatives/fs_hcp')
+
+    if os.path.isdir(fs_average) and os.path.isdir(fs_output):
+        src = fs_average
+        dest = os.path.join(fs_output, fsaverage)
+
+        if s_link:
+            recursive_symlink(src, dest)
+        else:
+            if not os.path.isdir(dest):
+                os.mkdir(dest)
+
+            shutil.move(src, dest)
 
 def t1w2bids(input_dir, output_dir, s_link = False):
     import os
@@ -107,26 +123,21 @@ def fs2bids(input_dir, output_dir, s_link = False):
     # get hcp subject corrected T1w image
     for subjects in sub_dir:
         subj_t1w = os.path.join(subjects, 'T1w')
-        print(subj_t1w)
         subj_fs = os.path.join(subj_t1w, subjects.split('/')[-1])
 
-        print(os.path.isdir(subj_fs), subj_fs)
 
         # output directory for the subject
         fs_output = os.path.join(output_dir, 'derivatives')
-        print(fs_output)
         if not os.path.exists(fs_output):
             os.mkdir(fs_output)
 
         # output directory for the subject
         fs_output = os.path.join(output_dir, 'derivatives/fs_hcp')
-        print(fs_output)
         if not os.path.exists(fs_output):
             os.mkdir(fs_output)
 
         # output directory with subject name added
         fs_bids = os.path.join(fs_output, subjects.split('/')[-1])
-        print(fs_bids)
         
         # symlink or move fs directory to output dir
         if s_link:
@@ -652,6 +663,12 @@ def main():
         if 'freesurfer' in derivatives:
             print('\nRunning freesurfer')
             fs2bids(input_dir, output_dir, s_link = symlink)
+
+            print("\nRunning arrange_subjects")
+            arrange_subjects(output_dir + '/derivatives/fs_hcp')
+
+            print("\n Running fsaverage")
+            add_fsaverage(input_dir, output_dir, s_link = symlink)
     else:
         print("\nRunning hcp2bids")
         hcp2bids(input_dir, output_dir, s_link = symlink)

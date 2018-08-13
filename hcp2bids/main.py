@@ -488,47 +488,59 @@ def main():
         help="Directory where BIDS data will be stored",
         metavar="output_dir")
     parser.add_argument(
-        "-s",
-        help="Type t for true and f for false. If true, symlinks will be " + \
-            "created for files from input_dir to output_dir and put the" + \
-            " symlinks in BIDS format. If false, files from input_dir will be " + \
-            "moved to output_dir and then put into BIDS format.",
-        metavar = "--symlink",
-        default = 'f'
+        "--symlink",
+        help="Creates symlinks " + \
+            "for files from input_dir to output_dir and puts the" + \
+            " symlinks in BIDS format. Without this flag, the HCP files will be moved from input_dir " + \
+            "to output_dir and then put into BIDS format.",
+        action = 'store_true',
+    )
+    parser.add_argument(
+        "-d",
+        help="Takes HCP files that have undergone extensive preprocessing and puts them into BIDS format." + \
+                " 'T1w' moves processed T1w images into BIDS format" + \
+                " 'freesurfer' moves HCP freesurfer output files into BIDS format." + \
+                " If this flag is selected, only the derivatives will be put into BIDS format (not the raw files)" + \
+                " in output_dir/derivates.",
+        metavar="{'T1w', 'freesurfer'}",
+        dest="ders", 
+        type=str,
+        choices = ['T1w', 'freesurfer'],
+        action = 'append'
     )
     parser.add_argument(
         "-g",
         help="Path to a text file with participant_id to GUID mapping. You will need to use the "
              "GUID Tool (https://ndar.nih.gov/contribute.html) to generate GUIDs for your participants.",
-        metavar="--guid_mapping",
+        metavar="guid_file",
         default = '.'
     )
+
     args = parser.parse_args()
 
     input_dir = vars(args)['input_dir']
     guid_map = vars(args)['g']
     output_dir = vars(args)['output_dir']
-
-    if vars(args)['s'] == 't':
-        symlink = True
-    else:
-        symlink = False
+    symlink = vars(args)['symlink']
+    derivatives = vars(args)['ders']
+    
 
     print("Input Directory: ", input_dir)
     print("GUID Mapping", guid_map)
     print("Output Directory: ", output_dir)
     print("Symlink: ", symlink)
+    print("Derivatives", derivatives)
 
     print("\nMetadata extraction complete.")
 
-    print("\nRunning hcp2bids")
-    hcp2bids(input_dir, output_dir, s_link = symlink)
+    # print("\nRunning hcp2bids")
+    # hcp2bids(input_dir, output_dir, s_link = symlink)
 
-    print("\nRunning arrange_subjects")
-    arrange_subjects(output_dir)
+    # print("\nRunning arrange_subjects")
+    # arrange_subjects(output_dir)
 
-    print("\nRunning json_toplevel")
-    json_toplevel(output_dir)
+    # print("\nRunning json_toplevel")
+    # json_toplevel(output_dir)
 
 if __name__ == '__main__':
     main()

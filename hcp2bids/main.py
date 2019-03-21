@@ -22,13 +22,11 @@ def FourDimImg(image, destinationpath_3d, outputfilename):
     #outputfilename= sub-285345_run-02_magnitude2
     #this function handles conversion from 4d to 3d along with saving output with bids std name
     img = ni.load(image)
-    destination_path = destinationpath_3d
     images = ni.four_to_three(img)
     outputfilenamepattern = outputfilename + '{:01d}.nii.gz'
     for i, img_3d in enumerate(images):
-        i = i +1
-        output_filename = outputfilenamepattern.format(i)
-        output_path = os.path.join(destination_path, output_filename)
+        output_filename = outputfilenamepattern.format(i+1)
+        output_path = os.path.join(destinationpath_3d, output_filename)
         ni.save(img_3d, output_path)
     os.remove(image)
     return img_3d
@@ -205,8 +203,20 @@ def hcp2bids(input_dir, output_dir, s_link = False):
                 if not os.path.islink(dst):
                     os.symlink(os.path.realpath(func_data), dst)
             else:
-                shutil.move(func_data, dst)
+                shutil.copy(func_data, dst)
         print("done with func for --", subjects)
+
+        func2_list = glob.glob(os.path.join(subj_raw, 'r*/*rfMRI*'))
+        for func_data in func2_list:
+            parentdir = os.path.split(os.path.dirname(func_data))[1]
+            dst = func + parentdir +'_'+ os.path.split(func_data)[1]
+
+            if s_link:
+                if not os.path.islink(dst):
+                    os.symlink(os.path.realpath(func_data), dst)
+            else:
+                shutil.copy(func_data, dst)
+        print("done with func2(rest) for --", subjects)
 
         sbref_list = glob.glob(os.path.join(subj_raw, '*/*SBRef*'))
         for sbref in sbref_list:
@@ -217,7 +227,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
                 if not os.path.islink(dst):
                     os.symlink(os.path.realpath(sbref), dst)
             else:
-                shutil.move(sbref, dst)
+                shutil.copy(sbref, dst)
         print("done with SBREF's for --", subjects)
 
         anat_list = glob.glob(os.path.join(subj_raw, 'T*/*3T_T*'))
@@ -228,7 +238,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
                 if not os.path.islink(dst):
                     os.symlink(os.path.realpath(anat_data), dst)
             else:
-                shutil.move(anat_data, dst)
+                shutil.copy(anat_data, dst)
         print("done with Anat for --", subjects)
 
         dwi_list = glob.glob(os.path.join(subj_raw, '*/*DWI*'))
@@ -239,7 +249,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
                 if not os.path.islink(dst):
                     os.symlink(os.path.realpath(dwi_data), dst)
             else:
-                shutil.move(dwi_data, dst) 
+                shutil.copy(dwi_data, dst) 
         print("done with DWI's for --", subjects)
 
         dwi_subj_raw = os.path.join(subjects, 'bids')
@@ -259,7 +269,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             filename_split = nifti_func_file.split('/')
             task = filename_split[-1].split('_')[1]
             
-            if 'LR' in filename_split[-1]:
+            if 'LR' in filename_split[-1].upper():
                 acq = 'LR'
             else:
                 acq = 'RL'
@@ -275,36 +285,26 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             
             tail = filename_split[-1].split('_')[-1]
 
-            if task not in ['REST', 'REST2']:
+            if task not in ['REST']:
                 if 'SBRef' in tail:
-                    filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_' + tail.lower()
-                    #filename = 'sub-' + sub + '_' + 'task-' + task + '_' + tail.lower()
+                    filename = 'sub-' + sub + '_task-' + task + '_acq-' + acq + '_' + tail.lower()
                 else:
-                    filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_bold' + tail[-7:]
-                    #filename = 'sub-' + sub + '_' + 'task-' + task + '_bold' + tail[-7:]
-
-                    # rep_time = { "EMOTION" : 2.26,
-                    # "GAMBLING" : 3.20,
-                    # "LANGUAGE" : 3.95,
-                    # "SOCIAL" : 3.45,
-                    # "WM" : 5.01,
-                    # "MOTOR" : 3.5,
-                    # "RELATIONAL" : 2.95
-                    # }
-
-                    # bold_json_dict = {}
-                    # bold_json_dict["RepetitionTime"] = 0.72
-                    # bold_json_dict["TaskName"] = task
-
-                    # touch(func + filename[:-6]+  'json')
-                    # json_file = func + filename[:-6]+ 'json'
-                    
-                    # with open(json_file, 'w') as editfile:
-                    #     json.dump(bold_json_dict, editfile, indent = 4)
-
+                    filename = 'sub-' + sub + '_task-' + task + '_acq-' + acq + '_bold' + tail[-7:]
             else:
-                #filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq +'_'+ 'run-' + run + '_' + tail.lower()
-                filename = 'sub-' + sub + '_' + 'task-' + task + '_' +'run-' + run + '_' + tail.lower()
+                if 'SBRef' in tail:
+                    filename = 'sub-' + sub + '_task-' + task + '_acq-' + acq + '_run-' + run + '_' + tail.lower()
+                else:
+                    filename = 'sub-' + sub + '_task-' + task + '_acq-' + acq + '_run-' + run + '_bold' + tail[-7:]
+
+                # bold_json_dict = {}
+                # bold_json_dict["RepetitionTime"] = 0.72
+                # bold_json_dict["TaskName"] = task
+                # touch(func + filename[:-6]+  'json')
+                # json_file = func + filename[:-6]+ 'json'
+                   
+                # with open(json_file, 'w') as editfile:
+                #     json.dump(bold_json_dict, editfile, indent = 4)
+
             
             path_filename = func + filename
             print(path_filename)
@@ -319,7 +319,6 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             #touch(path_filename[:-6]+ 'json')
 
         ''' sort anat files and rename it '''
-        #anat = '/Users/suyashdb/Documents/hcp2bids/hcpdata/285446/bids/anat'
         anat_files_list = glob.glob(os.path.join(anat, '*T*.nii.gz'))
         print("\npath where nifti files are searched -", os.path.join(anat, '*T*.nii.gz'))
         print(len(anat_files_list))
@@ -340,7 +339,6 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             
             print(path_filename)
             shutil.move(anat_file, path_filename)
-            #touch(path_filename[:-6]+ 'json')
         
             #########
         #Sort all nii.gz files in dwi and fmaps '''
@@ -440,21 +438,24 @@ def hcp2bids(input_dir, output_dir, s_link = False):
                 #run = m.group(2)
                 run = '0' + str(task[-1])
                 task = str(task[:-1])
-                print("This is task form rest loop - ", task)
+                print("This is task from rest loop - ", task)
             tail = filename_split[-1]
-            if task not in ['REST', 'REST2']:
+            if task not in ['REST']:
                 if 'SBRef' in tail:
-                    filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_' + tail.lower()
+                    filename = 'sub-' + sub + '_task-' + task + '_acq-' + acq + '_' + tail.lower()
                 else:
-                    filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq + '_bold' + tail[-7:]
+                    filename = 'sub-' + sub + '_task-' + task + '_acq-' + acq + '_bold' + tail[-7:]
             else:
-                filename = 'sub-' + sub + '_' + 'task-' + task + '_' +  'acq-' + acq +'_'+ 'run-' + run + '_' + tail.lower()
+                if 'SBRef' in tail:
+                    filename = 'sub-' + sub + '_task-' + task + '_acq-' + acq + '_run-' + run + '_' + tail.lower()
+                else:
+                    filename = 'sub-' + sub + '_task-' + task + '_acq-' + acq + '_run-' + run + '_bold' + tail[-7:]
         
             print('intended_for - ',filename)
         
             filename = 'func/'+ filename
             fmap_json_dict = {}
-            fmap_json_dict["intended_for"] = filename
+            fmap_json_dict["IntendedFor"] = filename
         
             fmap_json_dict["TotalReadoutTime"] = 0.08346
         
@@ -491,11 +492,12 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             sub = filename_split[2]
             run_number = filename_split[1][-1]
             
-            filename = 'sub-' + sub + '_' + 'run-0' + str(run) + '_magnitude'+ '.nii.gz'
+            filename = 'sub-' + sub + '_' + 'run-0' + str(run) + '_magnitude'
             path_filename = os.path.join(fmap, filename)
             print(path_filename)
 
-            shutil.move(fmapfile, path_filename)
+            FourDimImg(fmapfile, fmap, filename)
+            #shutil.move(fmapfile, path_filename)
             
             #looking into phasediff image
             filename_phasediff = 'sub-' + sub + '_' + 'run-0' + str(run) + '_phasediff' + '.nii.gz'
@@ -512,7 +514,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             print('intended_for - ',intended_for_filename)
             
             fmap_phasdiff_json_dict = {}
-            fmap_phasdiff_json_dict["intended_for"] = intended_for_filename
+            fmap_phasdiff_json_dict["IntendedFor"] = intended_for_filename
             if filename_split[0] == 'T1w':
                 fmap_phasdiff_json_dict["EchoTime1"] = 0.00214
                 fmap_phasdiff_json_dict["EchoTime2"] = 0.00460
@@ -524,6 +526,13 @@ def hcp2bids(input_dir, output_dir, s_link = False):
             run = run + 1
 
 
+        dset_desc_json_dict = {}
+        dset_desc_json_dict["Name"] = "WashU/UMinn HCP"
+        dset_desc_json_dict["BIDSVersion"] = "1.2.0"
+        with open(os.path.join(output_dir,'dataset_description.json'), 'w') as editfile:
+            json.dump(dset_desc_json_dict, editfile, indent = 4)
+ 
+        
         print("\n\nBIDS format data is at -", output_dir)
 
 ## main.py
@@ -558,10 +567,9 @@ def json_toplevel(output_dir):
     #declare dict with common scan_parameters
     bold_json_dict = {
     "RepetitionTime": 0.72,
-    "EchoTime": 0.058,
+    "EchoTime": 0.0331,
     "EffectiveEchoSpacing": 0.00058,
     "MagneticFieldStrength": 3.0,
-    "TaskName": "Gambling",
     "Manufacturer": "Siemens",
     "ManufacturerModelName": "Skyra"
     }
@@ -574,8 +582,10 @@ def json_toplevel(output_dir):
         if RL is not None:
             print("its RL ")
             addline = {"PhaseEncodingDirection": "i-"}
-        # addline = { "EffectiveEchoSpacing" : 0.0058}
         z = bold_json_dict.copy()
+        z.update(addline)
+        task=json_file.split('_')[0].split('-')[1]        
+        addline = {"TaskName":"{}".format(task)}
         z.update(addline)
         print("updated", json_file)
         with open(json_file, 'w') as editfile:

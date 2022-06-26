@@ -586,7 +586,7 @@ def json_toplevel(output_dir):
             addline = {"PhaseEncodingDirection": "i-"}
         z = bold_json_dict.copy()
         z.update(addline)
-        task=json_file.split('_')[0].split('-')[1]        
+        task=json_file.replace(output_dir,"").split('_')[0].split('-')[1]              
         addline = {"TaskName":"{}".format(task)}
         z.update(addline)
         print("updated", json_file)

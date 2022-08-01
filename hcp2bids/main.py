@@ -545,7 +545,7 @@ def hcp2bids(input_dir, output_dir, s_link = False):
 
 def arrange_subjects(output_dir):
     # find all the subjects in the output dir
-    sub_dir = [os.path.join(output_dir,o) for o in os.listdir(output_dir) if os.path.isdir(os.path.join(output_dir,o))]
+    sub_dir = [os.path.join(output_dir,o) for o in os.listdir(output_dir) if os.path.isdir(os.path.join(output_dir,o)) and o[0].isdigit()]
     for subjects in sub_dir:
         # rename all subjects sub-{subject_number}
         sub = subjects.split('/')[-1]
@@ -586,7 +586,7 @@ def json_toplevel(output_dir):
             addline = {"PhaseEncodingDirection": "i-"}
         z = bold_json_dict.copy()
         z.update(addline)
-        task=json_file.split('_')[0].split('-')[1]        
+        task=json_file.replace(output_dir,"").split('_')[0].split('-')[1]              
         addline = {"TaskName":"{}".format(task)}
         z.update(addline)
         print("updated", json_file)

@@ -193,7 +193,13 @@ def hcp2bids(input_dir, output_dir, s_link = False):
         for fieldmap in fieldmaplist:
             parentdir = os.path.split(os.path.dirname(fieldmap))[1]
             dst = fmap + parentdir +'_'+ os.path.split(fieldmap)[1]
-            shutil.copy(fieldmap, dst)
+            
+            if s_link:
+                if not os.path.islink(dst):
+                    os.symlink(os.path.realpath(fieldmap), dst)
+            else:
+                shutil.copy(fieldmap, dst)
+                
         print("done with fMAPs for --", subjects)
 
         func_list = glob.glob(os.path.join(subj_raw, 't*/*tfMRI*'))
